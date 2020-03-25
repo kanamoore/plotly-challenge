@@ -1,5 +1,5 @@
 // Use the D3 library to read in samples.json.
-d3.json("samples.json").then(function(data) {
+d3.json("samples.json").then(function createPlotly(data) {
   console.log(data);
   var testid = data.names;
 
@@ -16,11 +16,30 @@ d3.json("samples.json").then(function(data) {
   // Retrive the selected option and use it to get index
   var dropdownMenu = d3.select("#selDataset");
   var dropdownValue = dropdownMenu.property("value");
-
-  // Retrive index number of testid array using dropdownValue
   var index = testid.indexOf(dropdownValue);
-  console.log(index);
 
+  // Show demographic info
+  d3.select("#testid").text(`ID: ${dropdownValue}`);
+  d3.select("#ethnicity").text(`ethnicity: ${data.metadata[index].ethnicity}`);
+  d3.select("#gender").text(`gender: ${data.metadata[index].gender}`);
+  d3.select("#age").text(`age: ${data.metadata[index].age}`);
+  d3.select("#location").text(`location: ${data.metadata[index].location}`);
+  d3.select("#bbtype").text(`bbtype: ${data.metadata[index].bbtype}`);
+  d3.select("#wfreq").text(`wfreq: ${data.metadata[index].wfreq}`);
+
+  // Create a dynamic demographic info - issue is to get data.metadata[index].[value]
+  // var demographicList = Object.keys(data.metadata[0]);
+  // demographicList.forEach(function(p) {
+  //   var sel = document.getElementById("sample-metadata");
+  //   var item = document.createElement("p");
+  //   item.id = p;
+  //   item.appendChild(document.createTextNode(`${p}: ${data.metadata[index]}`));
+  //   // d3.select(`"#${p}"`).text("test");
+  //   // item.value = `${p}:${p}`;
+  //   sel.appendChild(item);
+  // });
+
+  // Create a bar graph using index
   var defaultsampleData = data.samples[index].sample_values
     .slice(0, 10)
     .reverse();
@@ -40,101 +59,68 @@ d3.json("samples.json").then(function(data) {
 
   Plotly.newPlot("bar", bardata);
 
-  // // Create a bubble chart
-  // var bubbledata = [
-  //   {
-  //     x: data.samples[0].otu_ids,
-  //     y: data.samples[0].sample_values,
-  //     mode: "markers",
-  //     text: data.samples[0].otu_labels,
-  //     marker: {
-  //       size: data.samples[0].sample_values
-  //       // color: [
-  //       //   "rgb(93, 164, 214)",
-  //       //   "rgb(255, 144, 14)",
-  //       //   "rgb(44, 160, 101)",
-  //       //   "rgb(255, 65, 54)"
-  //       // ]
-  //     }
-  //   }
-  // ];
+  // Create a bubble chart
+  var bubbledata = [
+    {
+      x: data.samples[index].otu_ids,
+      y: data.samples[index].sample_values,
+      mode: "markers",
+      text: data.samples[index].otu_labels,
+      marker: {
+        size: data.samples[index].sample_values,
+        color: data.samples[index].otu_ids
+      }
+    }
+  ];
 
-  // Plotly.newPlot("bubble", bubbledata);
+  var labels = {
+    xaxis: { title: "OTU ID" },
+    yaxis: { title: "Sample Values" }
+  };
+
+  Plotly.newPlot("bubble", bubbledata, labels);
 
   // Create a gauge chart
-  var gaugedata = [{}];
+  // You will need to modify the example gauge code to account for values ranging from 0 through 9.
+  var gaugedata = [
+    {
+      values: data.metadata[index].wfreq,
+      rotation: 90,
+      text: ["8-9", "0-1", "1-2", "2-3", "3-4", "4-5", "5-6", "6-7", "7-8"],
+      textinfo: "text",
+      textposition: "inside",
+      marker: {
+        colors: [
+          "rgba(14, 127, 0, .5)",
+          "rgba(110, 154, 22, .5)",
+          "rgba(170, 202, 42, .5)",
+          "rgba(202, 209, 95, .5)",
+          "rgba(210, 206, 145, .5)",
+          "rgba(232, 226, 202, .5)",
+          "rgba(255, 255, 255, 0)"
+        ]
+      },
+      labels: ["0-1", "1-2", "2-3", "3-4", "4-5", "5-6", "6-7"],
+      hoverinfo: "label",
+      hole: 0.5,
+      type: "pie",
+      showlegend: false
+    }
+  ];
 
-  // Get top 10 of sample values
-  // var defaultsortedValues = defaultData.sort(
-  //   (a, b) => b.sample_values - a.sample_values
-  // );
-  // console.log(defaultsampleData);
+  var layout = { width: 600, height: 400 };
+  Plotly.newPlot("gauge", gaugedata, layout);
 
-  // var sampleData = data.samples.map(item => item);
-  // var sortedotuValues = sampleData.sort(
-  //   (a, b) => b.sample_values - a.sample_values
-  // );
-  // var top10values = sortedotuValues.slice(0, 10);
-  // console.log(sampleData);
-  // console.log(sortedotuValues);
-  // console.log(top10values);
+  // When different test ID is selected, call an function optionChanged
+  d3.select("#selDataset").on("change", optionChanged);
 
-  // Show demographic info
-  var dropdownMenu = d3.select("#selDataset");
-  var dropdownValue = dropdownMenu.property("value");
+  function optionChanged() {
+    console.log("Different item was selected.");
+    var dropdownMenu = d3.select("#selDataset");
+    var dropdownValue = dropdownMenu.property("value");
+    console.log(`Currently test id ${dropdownValue} is shown on the page`);
 
-  // var id = [];
-  // var sampleValues = [];
-  // var otuValues = [];
-  // var otuLabels = [];
-
-  // console.log(testid);
-
-  // for (var i = 0; i < data.names.length; i++) {
-  //   // id.push(data.samples);
-  //   sampleValues.push(data.samples.map(item => item.sample_values));
-  //   otuValues.push(data.samples.map(item => item.otu_ids));
-  //   //
-  //   otuLabels.push(data.samples.map(item => item.otu_labels));
-  // }
-
-  // console.log(sampleValues);
-  // console.log(otuValues);
-  // // console.log(sortedotuValues);
+    // Update graph
+    createPlotly(data);
+  }
 });
-
-d3.select("#selDataset").on("change", optionChanged);
-
-function optionChanged() {
-  var dropdownMenu = d3.select("#selDataset");
-  var dropdownValue = dropdownMenu.property("value");
-  console.log(`Currently test id ${dropdownValue} is shown on the page`);
-
-  // Update graph
-  Plotly.restyle("bar", "x", [x]);
-  Plotly.restyle("bar", "x", [x]);
-}
-
-//   var sampleValues = data.samples.map(item => item.sample_values[0]);
-//   var otuValues = data.samples.map(item => item.otu_ids[0]);
-//   // var sortedotuValues = otuValues.sort((a, b) => b - a);
-//   var otuLabels = data.samples.map(item => item.otu_labels[0]);
-//   console.log(sampleValues);
-//   console.log(otuValues);
-//   console.log(sortedotuValues);
-// });
-
-// Create a horizontal bar chart with a dropdown menu to display the top 10 OTUs found in that individual.
-
-// Use sample_values as the values for the bar chart.
-
-// Use otu_ids as the labels for the bar chart.
-
-// Use otu_labels as the hovertext for the chart.
-// Create a bubble chart that displays each sample.
-
-// Display the sample metadata, i.e., an individual's demographic information.
-
-// Display each key-value pair from the metadata JSON object somewhere on the page.
-
-// Update all of the plots any time that a new sample is selected.
