@@ -13,6 +13,8 @@ from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 
+style="max-height: calc(500px + 10px) !important;overflow:hidden;"
+
 
 #################################################
 # Database Setup

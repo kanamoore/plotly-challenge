@@ -84,31 +84,63 @@ d3.json("samples.json").then(function createPlotly(data) {
   // You will need to modify the example gauge code to account for values ranging from 0 through 9.
   var gaugedata = [
     {
-      values: data.metadata[index].wfreq,
-      rotation: 90,
-      text: ["8-9", "0-1", "1-2", "2-3", "3-4", "4-5", "5-6", "6-7", "7-8"],
-      textinfo: "text",
-      textposition: "inside",
+      values: [
+        50 / 9,
+        50 / 9,
+        50 / 9,
+        50 / 9,
+        50 / 9,
+        50 / 9,
+        50 / 9,
+        50 / 9,
+        50 / 9,
+        50
+      ],
+      labels: [
+        "0-1",
+        "1-2",
+        "2-3",
+        "3-4",
+        "4-5",
+        "5-6",
+        "6-7",
+        "7-8",
+        "8-9",
+        ""
+      ],
       marker: {
         colors: [
           "rgba(14, 127, 0, .5)",
+          "rgba(40, 127, 0, .5)",
           "rgba(110, 154, 22, .5)",
           "rgba(170, 202, 42, .5)",
           "rgba(202, 209, 95, .5)",
           "rgba(210, 206, 145, .5)",
           "rgba(232, 226, 202, .5)",
-          "rgba(255, 255, 255, 0)"
+          "rgba(255, 255, 255, 0)",
+          "rgba(255, 300, 255, 0)",
+          "rgba(255, 300, 255, 0)"
         ]
       },
-      labels: ["0-1", "1-2", "2-3", "3-4", "4-5", "5-6", "6-7"],
-      hoverinfo: "label",
+
       hole: 0.5,
       type: "pie",
+      direction: "clockwise",
+      rotation: 90,
+      text: ["0-1", "1-2", "2-3", "3-4", "4-5", "5-6", "6-7", "7-8", "8-9", ""],
+      textinfo: "text",
+      textposition: "inside",
+      hoverinfo: "none",
       showlegend: false
     }
   ];
 
-  var layout = { width: 600, height: 400 };
+  var layout = {
+    width: 500,
+    height: 500,
+    title: "Belly Button Washing Frequency"
+    // xaxis: { title: "scrubs per week" }
+  };
   Plotly.newPlot("gauge", gaugedata, layout);
 
   // When different test ID is selected, call an function optionChanged
