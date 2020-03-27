@@ -2,42 +2,35 @@
 d3.json("samples.json").then(function createPlotly(data) {
   console.log(data);
   var testid = data.names;
+  console.log(testid);
 
   // Create a dynamic dropdown menu
-  console.log(testid);
-  testid.forEach(function(option) {
-    var sel = document.getElementById("selDataset");
-    var opt = document.createElement("option");
-    opt.appendChild(document.createTextNode(option));
-    opt.value = option;
-    sel.appendChild(opt);
-  });
+  d3.select("#selDataset")
+    .selectAll("option")
+    .data(testid)
+    .enter()
+    .append("option")
+    .html(function(d) {
+      return `<option>${d}</option`;
+    });
 
   // Retrive the selected option and use it to get index
   var dropdownMenu = d3.select("#selDataset");
   var dropdownValue = dropdownMenu.property("value");
   var index = testid.indexOf(dropdownValue);
 
-  // Show demographic info
-  d3.select("#testid").text(`ID: ${dropdownValue}`);
-  d3.select("#ethnicity").text(`ethnicity: ${data.metadata[index].ethnicity}`);
-  d3.select("#gender").text(`gender: ${data.metadata[index].gender}`);
-  d3.select("#age").text(`age: ${data.metadata[index].age}`);
-  d3.select("#location").text(`location: ${data.metadata[index].location}`);
-  d3.select("#bbtype").text(`bbtype: ${data.metadata[index].bbtype}`);
-  d3.select("#wfreq").text(`wfreq: ${data.metadata[index].wfreq}`);
+  // Create a dynamic demographic info
+  d3.select("#sample-metadata").html("");
+  d3.select("#sample-metadata")
+    .selectAll("p")
+    .data(Object.entries(data.metadata[index]))
+    .enter()
+    .append("p")
+    .html(function(d) {
+      return `${d[0]} : ${d[1]}`;
+    });
 
-  // Create a dynamic demographic info - issue is to get data.metadata[index].[value]
-  // var demographicList = Object.keys(data.metadata[0]);
-  // demographicList.forEach(function(p) {
-  //   var sel = document.getElementById("sample-metadata");
-  //   var item = document.createElement("p");
-  //   item.id = p;
-  //   item.appendChild(document.createTextNode(`${p}: ${data.metadata[index]}`));
-  //   // d3.select(`"#${p}"`).text("test");
-  //   // item.value = `${p}:${p}`;
-  //   sel.appendChild(item);
-  // });
+  console.log(Object.entries(data.metadata[index]));
 
   // Create a bar graph using index
   var defaultsampleData = data.samples[index].sample_values
@@ -57,10 +50,16 @@ d3.json("samples.json").then(function createPlotly(data) {
     }
   ];
 
-  Plotly.newPlot("bar", bardata);
+  var barLayout = {
+    title: "TOP10 Sample Values",
+    xaxis: { title: "Sample Values" },
+    yaxis: { title: "OTU ID" }
+  };
+
+  Plotly.newPlot("bar", bardata, barLayout);
 
   // Create a bubble chart
-  var bubbledata = [
+  var bubbleData = [
     {
       x: data.samples[index].otu_ids,
       y: data.samples[index].sample_values,
@@ -73,15 +72,14 @@ d3.json("samples.json").then(function createPlotly(data) {
     }
   ];
 
-  var labels = {
+  var bubbleLabels = {
     xaxis: { title: "OTU ID" },
     yaxis: { title: "Sample Values" }
   };
 
-  Plotly.newPlot("bubble", bubbledata, labels);
+  Plotly.newPlot("bubble", bubbleData, bubbleLabels);
 
   // Create a gauge chart
-  // You will need to modify the example gauge code to account for values ranging from 0 through 9.
   var gaugedata = [
     {
       values: [
@@ -110,15 +108,15 @@ d3.json("samples.json").then(function createPlotly(data) {
       ],
       marker: {
         colors: [
-          "rgba(14, 127, 0, .5)",
-          "rgba(40, 127, 0, .5)",
-          "rgba(110, 154, 22, .5)",
-          "rgba(170, 202, 42, .5)",
-          "rgba(202, 209, 95, .5)",
-          "rgba(210, 206, 145, .5)",
-          "rgba(232, 226, 202, .5)",
-          "rgba(255, 255, 255, 0)",
-          "rgba(255, 300, 255, 0)",
+          "rgb(247,242,236)",
+          "rgb(243,240,229)",
+          "rgb(233,231,201)",
+          "rgb(229,233,177)",
+          "rgb(213,229,149)",
+          "rgb(183,205,139)",
+          "rgb(135,192,128)",
+          "rgb(133,188,139)",
+          "rgb(128,181,134)",
           "rgba(255, 300, 255, 0)"
         ]
       },
@@ -135,13 +133,32 @@ d3.json("samples.json").then(function createPlotly(data) {
     }
   ];
 
-  var layout = {
-    width: 500,
-    height: 500,
-    title: "Belly Button Washing Frequency"
-    // xaxis: { title: "scrubs per week" }
+  // Calculate meter pointer
+  var radius = 0.3;
+  var radians = (1 - data.metadata[index].wfreq / 10) * Math.PI;
+  var x = radius * Math.cos(radians);
+  var y = radius * Math.sin(radians);
+
+  var gaugeLayout = {
+    shapes: [
+      {
+        type: "line",
+        x0: 0.5,
+        y0: 0.5,
+        x1: 0.5 + x,
+        y1: 0.5 + y,
+        line: {
+          color: "black",
+          width: 4
+        }
+      }
+    ],
+    title: "Belly Botton Washing Frequency per Week",
+    xaxis: { visible: false, range: [-1, 1] },
+    yaxis: { visible: false, range: [-1, 1] }
   };
-  Plotly.newPlot("gauge", gaugedata, layout);
+
+  Plotly.newPlot("gauge", gaugedata, gaugeLayout);
 
   // When different test ID is selected, call an function optionChanged
   d3.select("#selDataset").on("change", optionChanged);
