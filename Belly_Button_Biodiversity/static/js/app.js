@@ -67,7 +67,8 @@ d3.json("samples.json").then(function createPlotly(data) {
       text: data.samples[index].otu_labels,
       marker: {
         size: data.samples[index].sample_values,
-        color: data.samples[index].otu_ids
+        color: data.samples[index].otu_ids,
+        colorscale: "Viridis"
       }
     }
   ];
@@ -80,8 +81,33 @@ d3.json("samples.json").then(function createPlotly(data) {
   Plotly.newPlot("bubble", bubbleData, bubbleLabels);
 
   // Create a gauge chart
+  // Calculate meter pointer
+  var degrees = 10 - data.metadata[index].wfreq,
+    radius = 0.6;
+  var radians = (degrees * Math.PI) / 10;
+  var aX = 0.025 * Math.cos((degrees - 5 * Math.PI) / 10);
+  var aY = 0.025 * Math.sin(((degrees - 5) * Math.PI) / 10);
+  var bX = -0.025 * Math.cos(((degrees - 5) * Math.PI) / 10);
+  var bY = -0.025 * Math.sin(((degrees - 5) * Math.PI) / 10);
+  var cX = radius * Math.cos(radians);
+  var cY = radius * Math.sin(radians);
+
+  var path =
+    "M " + aX + " " + aY + " L " + bX + " " + bY + " L " + cX + " " + cY + " Z";
+
   var gaugedata = [
     {
+      type: "scatter",
+      x: [0],
+      y: [0],
+      marker: { size: 14, color: "850000" },
+      showlegend: false,
+      name: "Wash per Week",
+      text: data.metadata[index].wfreq,
+      hoverinfo: "text+name"
+    },
+    {
+      // Create 10 elements and hide the half of the pie chart
       values: [
         50 / 9,
         50 / 9,
@@ -133,23 +159,14 @@ d3.json("samples.json").then(function createPlotly(data) {
     }
   ];
 
-  // Calculate meter pointer
-  var radius = 0.3;
-  var radians = (1 - data.metadata[index].wfreq / 10) * Math.PI;
-  var x = radius * Math.cos(radians);
-  var y = radius * Math.sin(radians);
-
   var gaugeLayout = {
     shapes: [
       {
-        type: "line",
-        x0: 0.5,
-        y0: 0.5,
-        x1: 0.5 + x,
-        y1: 0.5 + y,
+        type: "path",
+        path: path,
+        fillcolor: "850000",
         line: {
-          color: "black",
-          width: 4
+          color: "850000"
         }
       }
     ],
