@@ -74,6 +74,7 @@ d3.json("samples.json").then(function createPlotly(data) {
   ];
 
   var bubbleLabels = {
+    title: "Bacteria Cultures Per Sample",
     xaxis: { title: "OTU ID" },
     yaxis: { title: "Sample Values" }
   };
